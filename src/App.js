@@ -13,8 +13,8 @@ import {
 } from "@material-ui/core";
 import { lighttheme, darktheme } from "./theme";
 import { makeStyles } from "@material-ui/core/styles";
-import { MemoryRouter as Router } from "react-router";
-import { Link as RouterLink } from "react-router-dom";
+import * as Scroll from "react-scroll";
+import { animateScroll } from "react-scroll";
 import axios from "axios";
 
 const apiUrl = "http://localhost:8888";
@@ -87,6 +87,7 @@ const App = () => {
   const [timer, setTimer] = useState(null);
   const [lyrics, setLyrics] = useState("");
   const prevPlaying = usePrevious(currentlyPlaying);
+  const lyricsTypography = useRef(null);
 
   const getHashParams = () => {
     let hashParams = {};
@@ -157,6 +158,19 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    if (currentlyPlaying && lyricsTypography) {
+      let offset =
+        (currentlyPlaying.progress_ms / currentlyPlaying.item.duration_ms) *
+        lyricsTypography.current.offsetHeight;
+      console.log(offset);
+
+      animateScroll.scrollTo(offset, {
+        duration: 500,
+        delay: 100,
+        smooth: true,
+      });
+    }
+
     if (
       prevPlaying &&
       currentlyPlaying &&
@@ -201,17 +215,15 @@ const App = () => {
         <div className={classes.heroButtons}>
           <Grid container spacing={3} justify="center">
             <Grid item>
-              <Router>
-                <Link href="http://localhost:8888/login">
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    //onClick={login}
-                  >
-                    Get Started
-                  </Button>
-                </Link>
-              </Router>
+              <Link href="http://localhost:8888/login">
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  //onClick={login}
+                >
+                  Get Started
+                </Button>
+              </Link>
             </Grid>
           </Grid>
         </div>
@@ -243,6 +255,7 @@ const App = () => {
           style={{
             whiteSpace: "pre-line",
           }}
+          ref={lyricsTypography}
         >
           {lyrics}
         </Typography>
@@ -254,7 +267,7 @@ const App = () => {
     <React.Fragment>
       <ThemeProvider theme={darktheme}>
         <CssBaseline />
-        <AppBar position="relavitve">
+        <AppBar position="relative">
           <Toolbar>
             <Typography
               variant="h6"

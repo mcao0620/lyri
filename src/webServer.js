@@ -8,6 +8,7 @@ var similartext = require("./similartext");
 //const { AuthorizationCode } = require("simple-oauth2");
 
 var client_id = "876302cfb8514ff187ce1be0d3558a2b"; // Your client id
+
 var redirect_uri = "http://localhost:8888/callback"; // Your redirect uri
 var app_uri = "http://localhost:3000/";
 
