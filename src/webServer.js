@@ -8,14 +8,13 @@ var similartext = require("./similartext");
 //const { AuthorizationCode } = require("simple-oauth2");
 
 var client_id = "876302cfb8514ff187ce1be0d3558a2b"; // Your client id
-
 var redirect_uri = "http://localhost:8888/callback"; // Your redirect uri
 var app_uri = "http://localhost:3000/";
 
 var musixmatch_id = "704afe99d0005ef37412706ae2ee8ddb";
 
 var genius_access_token =
-  "soR3eVm2xSlhvueDYCYGgNWQ49wTAobfqX54o7NL00_-iQfIBgdV6Z297r1VjMNf";
+  "h6eBldhirI624K7Nbtp4Y0oBtAVnDLidSOv0OwAmCqh4eFDXtbW6PxPJgJvLLeeb";
 
 /**
  * Generates a random string containing numbers and letters
@@ -196,7 +195,11 @@ app.get("/refresh_token", function (req, res) {
 });
 
 app.get("/genius/lyrics", function (req, res) {
-  const { title, artist } = req.query;
+  const { artist } = req.query;
+  let title = req.query.title;
+  if (title.indexOf("(") !== -1) {
+    title = title.slice(0, title.indexOf("("));
+  }
 
   let trackSearchOptions = {
     url:
@@ -219,13 +222,13 @@ app.get("/genius/lyrics", function (req, res) {
           if (path === "") {
             path = data.response.hits[i].result.path;
             percent = similartext.similartext(
-              data.response.hits[i].result.title_with_featured,
+              data.response.hits[i].result.title,
               title,
               true
             );
           } else {
             let tempPercent = similartext.similartext(
-              data.response.hits[i].result.title_with_featured,
+              data.response.hits[i].result.title,
               title,
               true
             );
@@ -236,16 +239,17 @@ app.get("/genius/lyrics", function (req, res) {
           }
         }
       }
-      if (path !== "") {
+      if (path !== "" && percent > 50) {
         let toScrape = {
           url: "https://genius.com" + path,
         };
         request(toScrape, function (error, response, body) {
           const $ = cheerio.load(body);
+          let scrapedLyrics = "";
           $(".lyrics > p").each((_idx, el) => {
-            const scrapedLyrics = $(el).text();
-            res.send(scrapedLyrics);
+            scrapedLyrics += $(el).text();
           });
+          res.send(scrapedLyrics);
         });
       } else {
         res.status(400).send();
