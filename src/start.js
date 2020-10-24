@@ -11,8 +11,8 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 600,
+    height: 800,
     webPreferences: {
       nodeIntegration: true,
     },
@@ -38,9 +38,10 @@ app.on("window-all-closed", () => {
   }
 });
 
-ps.on('exit', function(code, signal) {
-  console.log('child process exited with ' + 
-              `code ${code} and signal ${signal}`);
+ps.on("exit", function (code, signal) {
+  console.log(
+    "child process exited with " + `code ${code} and signal ${signal}`
+  );
 });
 
 app.on("activate", () => {

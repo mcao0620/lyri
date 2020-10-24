@@ -5,7 +5,6 @@ var querystring = require("querystring");
 var cookieParser = require("cookie-parser");
 
 var client_id = "876302cfb8514ff187ce1be0d3558a2b"; // Your client id
-
 var redirect_uri = "http://localhost:8888/callback"; // Your redirect uri
 var app_uri = "http://localhost:3000/";
 
@@ -38,7 +37,6 @@ app.get("/login", function (req, res) {
   var state = generateRandomString(16);
   res.cookie(stateKey, state);
 
-  // your application requests authorization
   var scope = "user-read-currently-playing user-read-playback-state";
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
@@ -53,9 +51,6 @@ app.get("/login", function (req, res) {
 });
 
 app.get("/callback", function (req, res) {
-  // your application requests refresh and access tokens
-  // after checking the state parameter
-
   var code = req.query.code || null;
   var state = req.query.state || null;
   var storedState = req.cookies ? req.cookies[stateKey] : null;
@@ -95,12 +90,6 @@ app.get("/callback", function (req, res) {
           json: true,
         };
 
-        // use the access token to access the Spotify Web API
-        // request.get(options, function (error, response, body) {
-        //   console.log(body);
-        // });
-
-        // we can also pass the token to the browser to make requests from there
         res.redirect(
           app_uri +
             "#" +
@@ -109,7 +98,6 @@ app.get("/callback", function (req, res) {
               refresh_token: refresh_token,
             })
         );
-        //res.redirect("http://localhost:3000");
       } else {
         res.redirect(
           app_uri +
@@ -153,7 +141,6 @@ app.get("/refresh_token", function (req, res) {
 
 app.get("/lyrics", function (req, res) {
   const { title, artist } = req.query;
-  console.log(req.query);
 
   let trackSearchOptions = {
     url:
@@ -167,13 +154,12 @@ app.get("/lyrics", function (req, res) {
         apikey: musixmatch_id,
       }),
   };
-  console.log(trackSearchOptions.url);
+
   request.get(trackSearchOptions, function (error, response, body) {
     if (!error && response.statusCode === 200) {
       let data = JSON.parse(body);
       if (data.message.body.track_list.length > 0) {
         const { track_id } = data.message.body.track_list[0].track;
-        console.log(track_id);
 
         let lyricsGetOptions = {
           url:
