@@ -196,7 +196,7 @@ const App = () => {
         <Typography variant="h5" align="center" color="textSecondary" paragraph>
           Ever wished that you had side-by-side lyrics for your currently
           playing Spotify song? Lyri syncs directly with your Spotify account
-          and fetches song lyrics from Musixmatch, a popular lyrics platform.
+          and fetches song lyrics from Genius, a popular lyrics platform.
         </Typography>
         <div className={classes.heroButtons}>
           <Grid container spacing={3} justify="center">
