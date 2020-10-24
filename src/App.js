@@ -35,6 +35,9 @@ const useStyles = makeStyles((theme) => ({
   heroContent: {
     padding: theme.spacing(8, 0, 6),
   },
+  lyricsContent: {
+    padding: theme.spacing(4, 0, 6),
+  },
   heroButtons: {
     marginTop: theme.spacing(4),
   },
@@ -215,7 +218,7 @@ const App = () => {
   );
 
   const Lyrics = (
-    <div className={classes.heroContent}>
+    <div className={classes.lyricsContent}>
       <Container maxWidth="sm">
         <Typography variant="h5" align="center" color="textSecondary">
           Currently Playing:
