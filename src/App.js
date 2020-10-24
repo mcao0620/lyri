@@ -122,8 +122,9 @@ const App = () => {
         })
         .then((res) => {
           setCurrentlyPlaying(res.data);
+          setLyrics("Loading Lyrics...");
           axios
-            .get("http://localhost:8888/lyrics", {
+            .get("http://localhost:8888/genius/lyrics", {
               params: {
                 title: res.data.item.name,
                 artist: res.data.item.artists[0].name,
@@ -161,8 +162,9 @@ const App = () => {
       currentlyPlaying &&
       prevPlaying.item.name !== currentlyPlaying.item.name
     ) {
+      setLyrics("Loading Lyrics...");
       axios
-        .get("http://localhost:8888/lyrics", {
+        .get("http://localhost:8888/genius/lyrics", {
           params: {
             title: currentlyPlaying.item.name,
             artist: currentlyPlaying.item.artists[0].name,

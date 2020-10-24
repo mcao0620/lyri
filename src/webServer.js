@@ -3,11 +3,19 @@ var request = require("request"); // "Request" library
 var cors = require("cors");
 var querystring = require("querystring");
 var cookieParser = require("cookie-parser");
+var cheerio = require("cheerio");
+var similartext = require("./similartext");
+//const { AuthorizationCode } = require("simple-oauth2");
 
 var client_id = "876302cfb8514ff187ce1be0d3558a2b"; // Your client id
 
 var redirect_uri = "http://localhost:8888/callback"; // Your redirect uri
 var app_uri = "http://localhost:3000/";
+
+var musixmatch_id = "704afe99d0005ef37412706ae2ee8ddb";
+
+var genius_access_token =
+  "soR3eVm2xSlhvueDYCYGgNWQ49wTAobfqX54o7NL00_-iQfIBgdV6Z297r1VjMNf";
 
 /**
  * Generates a random string containing numbers and letters
@@ -33,6 +41,53 @@ app
   .use(express.static(__dirname + "/public"))
   .use(cors())
   .use(cookieParser());
+
+// const geniusClient = new AuthorizationCode({
+//   client: {
+//     id: "",
+//     secret:
+//       "",
+//   },
+//   auth: {
+//     tokenHost: "https://api.genius.com",
+//     tokenPath: "/oauth/token",
+//     authorizePath: "/oauth/authorize",
+//   },
+// });
+
+// const geniusAuthorizationUri = geniusClient.authorizeURL({
+//   redirect_uri: "http://localhost:8888/genius/callback",
+//   scope: "me",
+//   state: generateRandomString(16),
+//   response_type: "code",
+// });
+
+// app.get("/genius/login", function (req, res) {
+//   console.log(geniusAuthorizationUri);
+//   res.redirect(geniusAuthorizationUri);
+// });
+
+// app.get("/genius/callback", async function (req, res) {
+//   const { code } = req.query;
+//   const options = {
+//     code,
+//     grant_type: "authorization_code",
+//     client_id:
+//       "",
+//     client_secret:
+//       "",
+//     redirect_uri: app_uri,
+//     response_type: "code",
+//   };
+
+//   try {
+//     const token = await geniusClient.getToken(options);
+//     console.log("token: ", token.token);
+//   } catch (error) {
+//     console.error("Access Token Error", error.message);
+//     return res.status(500).json("Authentication failed");
+//   }
+// });
 
 app.get("/login", function (req, res) {
   var state = generateRandomString(16);
@@ -136,6 +191,65 @@ app.get("/refresh_token", function (req, res) {
       });
     } else {
       res.status(400).send();
+    }
+  });
+});
+
+app.get("/genius/lyrics", function (req, res) {
+  const { title, artist } = req.query;
+
+  let trackSearchOptions = {
+    url:
+      "https://api.genius.com/search?" +
+      querystring.stringify({
+        q: artist + " " + title,
+        access_token: genius_access_token,
+      }),
+  };
+
+  console.log(trackSearchOptions.url);
+
+  request.get(trackSearchOptions, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      let data = JSON.parse(body);
+      let path = "";
+      let percent = 0;
+      for (i = 0; i < data.response.hits.length; i++) {
+        if (data.response.hits[i].type === "song") {
+          if (path === "") {
+            path = data.response.hits[i].result.path;
+            percent = similartext.similartext(
+              data.response.hits[i].result.title_with_featured,
+              title,
+              true
+            );
+          } else {
+            let tempPercent = similartext.similartext(
+              data.response.hits[i].result.title_with_featured,
+              title,
+              true
+            );
+            if (tempPercent > percent) {
+              path = data.response.hits[i].result.path;
+              percent = tempPercent;
+            }
+          }
+        }
+      }
+      if (path !== "") {
+        let toScrape = {
+          url: "https://genius.com" + path,
+        };
+        request(toScrape, function (error, response, body) {
+          const $ = cheerio.load(body);
+          $(".lyrics > p").each((_idx, el) => {
+            const scrapedLyrics = $(el).text();
+            res.send(scrapedLyrics);
+          });
+        });
+      } else {
+        res.status(400).send();
+      }
     }
   });
 });
