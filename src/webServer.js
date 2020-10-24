@@ -6,6 +6,7 @@ var cookieParser = require("cookie-parser");
 
 var client_id = "876302cfb8514ff187ce1be0d3558a2b"; // Your client id
 var redirect_uri = "http://localhost:8888/callback"; // Your redirect uri
+var app_uri = "http://localhost:3000/";
 
 /**
  * Generates a random string containing numbers and letters
@@ -37,7 +38,7 @@ app.get("/login", function (req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = "user-read-currently-playing user-read-playlist-state";
+  var scope = "user-read-currently-playing user-read-playback-state";
   res.redirect(
     "https://accounts.spotify.com/authorize?" +
       querystring.stringify({
@@ -94,21 +95,23 @@ app.get("/callback", function (req, res) {
         };
 
         // use the access token to access the Spotify Web API
-        request.get(options, function (error, response, body) {
-          console.log(body);
-        });
+        // request.get(options, function (error, response, body) {
+        //   console.log(body);
+        // });
 
         // we can also pass the token to the browser to make requests from there
         res.redirect(
-          "/#" +
+          app_uri +
+            "#" +
             querystring.stringify({
               access_token: access_token,
               refresh_token: refresh_token,
             })
         );
+        //res.redirect("http://localhost:3000");
       } else {
         res.redirect(
-          "/#" +
+          app_uri +
             querystring.stringify({
               error: "invalid_token",
             })
@@ -141,6 +144,59 @@ app.get("/refresh_token", function (req, res) {
       res.send({
         access_token: access_token,
       });
+    } else {
+      res.status(400).send();
+    }
+  });
+});
+
+app.get("/lyrics", function (req, res) {
+  const { title, artist } = req.query;
+  console.log(req.query);
+
+  let trackSearchOptions = {
+    url:
+      "https://api.musixmatch.com/ws/1.1/track.search?" +
+      querystring.stringify({
+        q_track: title,
+        q_artist: artist,
+        f_has_lyrics: 1,
+        quorum_factor: 1,
+        format: "json",
+        apikey: musixmatch_id,
+      }),
+  };
+  console.log(trackSearchOptions.url);
+  request.get(trackSearchOptions, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      let data = JSON.parse(body);
+      if (data.message.body.track_list.length > 0) {
+        const { track_id } = data.message.body.track_list[0].track;
+        console.log(track_id);
+
+        let lyricsGetOptions = {
+          url:
+            "https://api.musixmatch.com/ws/1.1/track.lyrics.get?" +
+            querystring.stringify({
+              track_id: track_id,
+              format: "json",
+              apikey: musixmatch_id,
+            }),
+        };
+        request.get(lyricsGetOptions, function (error, response, body) {
+          if (!error && response.statusCode === 200) {
+            let lyrics = JSON.parse(body).message.body.lyrics.lyrics_body;
+            res.send(lyrics);
+          } else {
+            console.log(error);
+          }
+        });
+      } else {
+        res.status(400).send();
+      }
+    } else {
+      console.log(error);
+      res.status(400).send();
     }
   });
 });
