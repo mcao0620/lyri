@@ -8,7 +8,7 @@ var similartext = require("./similartext");
 //const { AuthorizationCode } = require("simple-oauth2");
 
 var client_id = "876302cfb8514ff187ce1be0d3558a2b"; // Your client id
-
+var client_secret = ""; // Your secret
 var redirect_uri = "http://localhost:8888/callback"; // Your redirect uri
 var app_uri = "http://localhost:3000/";
 
@@ -210,8 +210,6 @@ app.get("/genius/lyrics", function (req, res) {
         access_token: genius_access_token,
       }),
   };
-
-  console.log(trackSearchOptions.url);
 
   request.get(trackSearchOptions, function (error, response, body) {
     if (!error && response.statusCode === 200) {

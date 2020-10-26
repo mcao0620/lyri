@@ -100,7 +100,7 @@ const App = () => {
     return hashParams;
   };
 
-  useEffect(() => {
+  useEffect(async () => {
     let temp = getHashParams();
     setParams(temp);
 
@@ -145,12 +145,28 @@ const App = () => {
         setInterval(() => {
           axios
             .get("https://api.spotify.com/v1/me/player/currently-playing", {
-              headers: { Authorization: "Bearer " + temp.access_token },
+              headers: {
+                Authorization: "Bearer " + temp.access_token,
+              },
             })
             .then((res) => {
               setCurrentlyPlaying(res.data);
             })
-            .catch((err) => console.log(err));
+            .catch((err) => {
+              axios
+                .get("http://localhost:8888/refresh_token", {
+                  params: { refresh_token: temp.refresh_token },
+                })
+                .then((res) => {
+                  temp.access_token = res.data.access_token;
+                  let newParams = {
+                    access_token: res.data.access_token,
+                    refresh_token: temp.refresh_token,
+                  };
+                  setParams(newParams);
+                })
+                .catch(() => clearInterval(timer));
+            });
         }, 1000)
       );
       return clearInterval(timer);
