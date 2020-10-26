@@ -100,19 +100,16 @@ const App = () => {
     return hashParams;
   };
 
-  useEffect(async () => {
+  useEffect(() => {
     let temp = getHashParams();
     setParams(temp);
 
     if (temp.access_token) {
-      console.log("reached");
-
       axios
         .get("https://api.spotify.com/v1/me", {
           headers: { Authorization: "Bearer " + temp.access_token },
         })
         .then((res) => {
-          console.log(res.data);
           setProfile(res.data);
         })
         .catch((err) => console.log(err));
@@ -132,7 +129,6 @@ const App = () => {
               },
             })
             .then((lyrics) => {
-              console.log(lyrics.data);
               setLyrics(lyrics.data);
             })
             .catch((err) => {
@@ -164,6 +160,17 @@ const App = () => {
                     refresh_token: temp.refresh_token,
                   };
                   setParams(newParams);
+                  axios
+                    .get(
+                      "https://api.spotify.com/v1/me/player/currently-playing",
+                      {
+                        headers: {
+                          Authorization: "Bearer " + temp.access_token,
+                        },
+                      }
+                    )
+                    .then((res) => setCurrentlyPlaying(res.data))
+                    .catch(() => clearInterval(timer));
                 })
                 .catch(() => clearInterval(timer));
             });
@@ -178,7 +185,6 @@ const App = () => {
       let offset =
         (currentlyPlaying.progress_ms / currentlyPlaying.item.duration_ms) *
         lyricsTypography.current.offsetHeight;
-      console.log(offset);
 
       animateScroll.scrollTo(offset, {
         duration: 500,
@@ -201,7 +207,6 @@ const App = () => {
           },
         })
         .then((lyrics) => {
-          console.log(lyrics.data);
           setLyrics(lyrics.data);
         })
         .catch((err) => {
@@ -209,7 +214,7 @@ const App = () => {
           setLyrics("No Lyrics Found!");
         });
     }
-  }, [currentlyPlaying]);
+  }, [currentlyPlaying, params]);
 
   const Landing = (
     <div className={classes.heroContent}>
