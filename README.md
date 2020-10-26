@@ -20,6 +20,6 @@ lyri is a cross-platform Electron app made with React and Node.js.
 3. If necessary, replace the genius_access_token with your own; you can get one from https://docs.genius.com/
 4. Run `npm start` and `npm run electron` to start the app! You'll be redirected to log into your Spotify account, and then you're all set!
 
-## Screenshots
+## Example
 
 ![Lyri-Usage](public/lyri-usage.gif)
