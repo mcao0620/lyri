@@ -16,4 +16,4 @@ lyri is a cross-platform Electron app made with React and Node.js.
 
 ## Screenshots
 
-[Lyri-Usage][public/lyriusage.png]
+![Lyri-Usage](public/lyriusage.png)
