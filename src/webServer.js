@@ -213,6 +213,7 @@ app.get("/genius/lyrics", function (req, res) {
 
   request.get(trackSearchOptions, function (error, response, body) {
     if (!error && response.statusCode === 200) {
+      console.log("searched for track");
       let data = JSON.parse(body);
       let path = "";
       let percent = 0;
@@ -243,6 +244,7 @@ app.get("/genius/lyrics", function (req, res) {
           url: "https://genius.com" + path,
         };
         request(toScrape, function (error, response, body) {
+          console.log("scraped page");
           const $ = cheerio.load(body);
           let scrapedLyrics = "";
           $(".lyrics > p").each((_idx, el) => {

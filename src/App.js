@@ -181,10 +181,17 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (currentlyPlaying && lyricsTypography) {
+    if (
+      currentlyPlaying &&
+      currentlyPlaying.progress_ms &&
+      currentlyPlaying.item &&
+      currentlyPlaying.item.duration_ms &&
+      lyricsTypography
+    ) {
       let offset =
         (currentlyPlaying.progress_ms / currentlyPlaying.item.duration_ms) *
-        lyricsTypography.current.offsetHeight;
+          lyricsTypography.current.offsetHeight -
+        200;
 
       animateScroll.scrollTo(offset, {
         duration: 500,
@@ -196,6 +203,8 @@ const App = () => {
     if (
       prevPlaying &&
       currentlyPlaying &&
+      prevPlaying.item &&
+      currentlyPlaying.item &&
       prevPlaying.item.name !== currentlyPlaying.item.name
     ) {
       setLyrics("Loading Lyrics...");
@@ -264,7 +273,7 @@ const App = () => {
           color="secondary"
           className={classes.title}
         >
-          {currentlyPlaying
+          {currentlyPlaying && currentlyPlaying.item
             ? currentlyPlaying.item.name +
               " - " +
               currentlyPlaying.item.artists[0].name
